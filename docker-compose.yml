@@ -20,3 +20,8 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      
+  nodejsendpoint:
+    build: ./nodejsEndpoint/
+    ports:
+      - "3000:3000"
