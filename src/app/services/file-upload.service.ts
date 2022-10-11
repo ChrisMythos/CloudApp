@@ -10,10 +10,23 @@ export class FileUploadService {
 
   constructor(private http: HttpClient) { }
 
-  upload(imgData: FormData): Observable<HttpEvent<any>> {
-  
+  upload(file: File, imageName: string, imageDescr: string): Observable<HttpEvent<any>> {
+    // Add all data to the Object
+    const imgData: Object = {
+      name: imageName,
+      desc: imageDescr,
+      img: file,
+    };
 
-    const req = new HttpRequest('POST', `${this.baseUrl}/uploadImage`, imgData, {
+    const imgFormData: FormData = new FormData();
+    imgFormData.append('name', imageName);
+    imgFormData.append('desc', imageDescr);
+    imgFormData.append('img', file);
+
+    console.log('Trying to save... ');
+
+    // post data to NodeJs endpoint
+    const req = new HttpRequest('POST', `${this.baseUrl}/uploadImage`, imgFormData, {
       reportProgress: true,
       responseType: 'json'
     });
@@ -21,6 +34,7 @@ export class FileUploadService {
     return this.http.request(req);
   }
 
+  // get all pictures from NodeJs endpoint
   getFiles(): Observable<any> {
     return this.http.get(`${this.baseUrl}/getImages`);
   }

@@ -17,7 +17,7 @@ export class FileUploadComponent implements OnInit {
 
   fileInfos?: Observable<any>;
 
-  constructor(private uploadService: FileUploadService) {}
+  constructor(private uploadService: FileUploadService) { }
 
   ngOnInit(): void {
     this.fileInfos = this.uploadService.getFiles();
@@ -27,7 +27,7 @@ export class FileUploadComponent implements OnInit {
     this.selectedFiles = event.target.files;
   }
 
-  upload(imageName: string, imageDescr:string): void {
+  upload(imageName: string, imageDescr: string): void {
     this.progress = 0;
 
     if (this.selectedFiles) {
@@ -35,16 +35,13 @@ export class FileUploadComponent implements OnInit {
 
       if (file) {
 
-        this.currentFile = file; 
-        // Add all data to the Object
-        const imgData: FormData = new FormData();
-        imgData.append('img', file);
-        imgData.append('name', imageName);
-        imgData.append('desc', imageDescr);
+        this.currentFile = file;
+        console.log(file);
 
-      // push data to express endpoint
-        this.uploadService.upload(imgData).subscribe({
+        // push data to express endpoint
+        this.uploadService.upload(file, imageName, imageDescr).subscribe({
           next: (event: any) => {
+            // get upload progess
             if (event.type === HttpEventType.UploadProgress) {
               this.progress = Math.round((100 * event.loaded) / event.total);
             } else if (event instanceof HttpResponse) {
