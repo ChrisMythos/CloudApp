@@ -1,46 +1,51 @@
-<div class="row">
-  <div class="col-8">
-    <label class="btn btn-default p-0">
-      <input type="file" (change)="selectFile($event)" />
-    </label>
+<!-- Metagdatenn für Bild hinzufügen -->
+<form>
+  <div class="form-group">
+    <label>Name</label>
+    <input #imageName type="text" class="form-control" id="ImageName" placeholder="Name des Kunstwerks">
+  </div>
+  <div class="form-group">
+    <label>Beschreibung</label>
+    <input #imageDescr type="text" class="form-control" id="ImageDescr" placeholder="Beschreibung">
   </div>
 
-  <div class="col-4">
-    <button
-      class="btn btn-success btn-sm"
-      [disabled]="!selectedFiles"
-      (click)="upload()"
-    >
-      Upload
-    </button>
+  <!-- Datei auswahl und Upload Button-->
+  <div class="row">
+    <div class="col-8">
+      <label class="btn btn-default p-0">
+        <input type="file" (change)="selectFile($event)" />
+      </label>
+    </div>
+
+    <div class="col-4">
+      <button class="btn btn-success btn-sm" [disabled]="!selectedFiles"
+        (click)="upload(imageName.value, imageDescr.value)">
+        Upload
+      </button>
+    </div>
   </div>
-</div>
-
-<div *ngIf="currentFile" class="progress my-3">
-  <div
-    class="progress-bar progress-bar-info"
-    role="progressbar"
-    attr.aria-valuenow="{{ progress }}"
-    aria-valuemin="0"
-    aria-valuemax="100"
-    [ngStyle]="{ width: progress + '%' }"
-  >
-    {{ progress }}%
+  <!-- Upload Statusleiste-->
+  <div *ngIf="currentFile" class="progress my-3">
+    <div class="progress-bar progress-bar-info" role="progressbar" attr.aria-valuenow="{{ progress }}" aria-valuemin="0"
+      aria-valuemax="100" [ngStyle]="{ width: progress + '%' }">
+      {{ progress }}%
+    </div>
   </div>
-</div>
 
-<div *ngIf="message" class="alert alert-secondary" role="alert">
-  {{ message }}
-</div>
+  <!-- Anzeigen breits vorhandener Bilder-->
+  <div *ngIf="message" class="alert alert-secondary" role="alert">
+    {{ message }}
+  </div>
 
-<div class="card mt-3">
-  <div class="card-header">List of Files</div>
-  <ul
-    class="list-group list-group-flush"
-    *ngFor="let file of fileInfos | async"
-  >
-    <li class="list-group-item">
-      <a href="{{ file.url }}">{{ file.name }}</a>
-    </li>
-  </ul>
-</div>
+  <div class="card mt-3">
+    <div class="card-header">List of Files</div>
+    <ul class="list-group list-group-flush" *ngFor="let file of fileInfos | async">
+      <li class="list-group-item">
+        <p>{{ file.name }}</p>
+        <img src="data:file/{{file.img.contentType}};base64, 
+                     {{file.data.data.toString('base64')}}">
+        <p>{{ file.img.data.data }}</p>
+
+      </li>
+    </ul>
+  </div>
