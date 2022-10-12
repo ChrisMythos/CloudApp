@@ -1,16 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpEvent } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { Image } from "../models/getImagesModel"
+import { Image } from '../models/getImagesModel';
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FileUploadService {
   private baseUrl = 'http://localhost:3000';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  upload(file: File, imageName: string, imageDescr: string): Observable<HttpEvent<any>> {
+  upload(
+    file: File,
+    imageName: string,
+    imageDescr: string
+  ): Observable<HttpEvent<any>> {
     // Add all data to the Object
     const imgData: Object = {
       name: imageName,
@@ -26,10 +30,15 @@ export class FileUploadService {
     console.log('Trying to save... ');
 
     // post data to NodeJs endpoint
-    const req = new HttpRequest('POST', `${this.baseUrl}/uploadImage`, imgFormData, {
-      reportProgress: true,
-      responseType: 'json'
-    });
+    const req = new HttpRequest(
+      'POST',
+      `${this.baseUrl}/uploadImage`,
+      imgFormData,
+      {
+        reportProgress: true,
+        responseType: 'json',
+      }
+    );
 
     return this.http.request(req);
   }
@@ -38,7 +47,5 @@ export class FileUploadService {
   getFiles(): Observable<Image[]> {
     //map response to Image[]
     return this.http.get<Image[]>(`${this.baseUrl}/getImages`);
-
-
   }
 }

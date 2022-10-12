@@ -1,13 +1,16 @@
-import { Imagedata } from "./ImagedataModel";
+import { Imagedata } from './ImagedataModel';
 export class Image {
-    constructor(img: Imagedata,
-        _id: string,
-        name: string,
-        desc: string,
-        __v: number) { }
-    img: Imagedata;
-    _id: string;
-    name: string;
-    desc: string;
-    __v: number;
+  constructor(
+    img: Imagedata,
+    _id: string,
+    name: string,
+    desc: string,
+    __v: number
+  ) {}
+
+  img: Imagedata;
+  _id: string;
+  name: string;
+  desc: string;
+  __v: number;
 }
