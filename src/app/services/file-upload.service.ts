@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpEvent } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
+import { map, Observable } from 'rxjs';
+import {Image} from "../models/getImagesModel"
 @Injectable({
   providedIn: 'root'
 })
@@ -35,7 +35,9 @@ export class FileUploadService {
   }
 
   // get all pictures from NodeJs endpoint
-  getFiles(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/getImages`);
+  getFiles(): Observable<Image[]> {
+    return this.http.get(`${this.baseUrl}/getImages`).pipe(map(data => {return new Image(data.img,data._id,data.name,data.dec,data['__v']);}));
+
+    
   }
 }

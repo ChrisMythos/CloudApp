@@ -40,9 +40,10 @@ app.get('/getImages', (req, res) => {
                 console.log("item in images item:");
                 console.log(element);
             });
-            res.setHeader('Content-Type', 'application/json');
+            //res.setHeader('Content-Type', 'application/json');
             // TODO: hier noch irgendwie alle items senden, nicht nur eins
-            res.end(JSON.stringify(items));
+            //res.end(JSON.stringify(items));
+            res.json(items);
             console.log("items send to requester");
         }
     });
@@ -50,7 +51,7 @@ app.get('/getImages', (req, res) => {
 
 
 // Post endpoint. Images is received here and saved into database
-app.post('/uploadImage', upload.single('image'), (req, res, next) => {
+app.post('/uploadImage', upload.single('img'), (req, res, next) => {
     console.log("bin in der upload");
 
     var obj = {
