@@ -52,7 +52,7 @@ export class FileUploadService {
   searchFiles(searchText: string): Observable<Image[]> {
     //map response to Image[]
     return this.http.get<Image[]>(
-      `${this.baseUrl}/queryImage?searchText=${searchText}`
+      `${this.baseUrl}/queryImage?queryString=${searchText}`
     );
   }
 }

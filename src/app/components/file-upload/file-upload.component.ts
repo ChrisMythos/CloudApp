@@ -42,7 +42,7 @@ export class FileUploadComponent implements OnInit {
     this.selectedFiles = event.target.files;
   }
 
-  upload(imageName: string, imageDescr: string): void {
+  upload(imageName: string, imageDescr: string): void {    
     this.progress = 0;
 
     if (this.selectedFiles) {
@@ -71,8 +71,8 @@ export class FileUploadComponent implements OnInit {
               }
             }
           },
+          
         });
-        window.location.reload();
       }
 
       this.selectedFiles = undefined;
