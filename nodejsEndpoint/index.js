@@ -36,13 +36,20 @@ app.get('/getImages', (req, res) => {
             res.status(500).send('An error occurred', err);
         }
         else {
-            items.forEach(element => {
-                console.log("item in images item:");
-                console.log(element);
-            });
-            //res.setHeader('Content-Type', 'application/json');
-            // TODO: hier noch irgendwie alle items senden, nicht nur eins
-            //res.end(JSON.stringify(items));
+            res.json(items);
+            console.log("items send to requester");
+        }
+    });
+});
+
+app.get('/queryImage', (req, res) => {
+    queryString = req.query.queryString;
+    imgModel.find({ $or: [ { name: {$regex : queryString} }, { desc: {$regex : queryString} } ] }, (err, items) => {
+        if (err) {
+            console.log(err);
+            res.status(500).send('An error occurred', err);
+        }
+        else {
             res.json(items);
             console.log("items send to requester");
         }

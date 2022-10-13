@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { HttpEventType, HttpResponse } from '@angular/common/http';
+import { HttpEventType, HttpHeaderResponse, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FileUploadService } from 'src/app/services/file-upload.service';
 import { Image } from '../../models/getImagesModel';
@@ -59,19 +59,16 @@ export class FileUploadComponent implements OnInit {
               this.message = event.body.message;
               this.fileInfos = this.uploadService.getFiles();
             }
-          },
-          error: (err: any) => {
-            console.log(err);
-            this.progress = 0;
-
-            if (err.error && err.error.message) {
-              this.message = err.error.message;
+            if(event instanceof HttpHeaderResponse){
+               //check if upload was successfully
+            if(event.status === 200){
+              this.message = 'upload successful';
             } else {
               this.message = 'Could not upload the file!';
             }
-
-            this.currentFile = undefined;
-          },
+            }
+                       
+          }
         });
       }
 
