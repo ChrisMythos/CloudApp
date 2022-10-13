@@ -1,5 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { HttpEventType, HttpHeaderResponse, HttpResponse } from '@angular/common/http';
+import {
+  HttpEventType,
+  HttpHeaderResponse,
+  HttpResponse,
+} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FileUploadService } from 'src/app/services/file-upload.service';
 import { Image } from '../../models/getImagesModel';
@@ -25,7 +29,6 @@ export class FileUploadComponent implements OnInit {
       //convert image to base64
       data.forEach((image: any) => {
         // convert _arrayBufferToBase64
-        // const base64Flag = 'data:image/png;base64,';
         const imageBase64 = _arrayBufferToBase64(image.img.data.data);
         console.log(imageBase64);
         image.img.data.data = imageBase64;
@@ -59,17 +62,17 @@ export class FileUploadComponent implements OnInit {
               this.message = event.body.message;
               this.fileInfos = this.uploadService.getFiles();
             }
-            if(event instanceof HttpHeaderResponse){
-               //check if upload was successfully
-            if(event.status === 200){
-              this.message = 'upload successful';
-            } else {
-              this.message = 'Could not upload the file!';
+            if (event instanceof HttpHeaderResponse) {
+              //check if upload was successfully
+              if (event.status === 200) {
+                this.message = 'upload successful';
+              } else {
+                this.message = 'Could not upload the file!';
+              }
             }
-            }
-                       
-          }
+          },
         });
+        window.location.reload();
       }
 
       this.selectedFiles = undefined;
