@@ -1,29 +1,29 @@
 <!-- Search für Bild-->
-<div class="input-group">
-  <div class="card mt-3">
-    <input mdbInput type="search" id="form1" class="form-control" />
-    <label mdbLabel class="form-label" for="form1">Search</label>
-</div>
-  <button type="button" class="btn btn-primary">
-    <i class="fas fa-search"></i>
-  </button>
-</div>
+<form>
+  <div class="row">
+    <div class="col-8">
+      <label for="name">Query: </label>
+      <input id="name" type="text" [formControl]="searchText">
+    </div>
+    <div class="col-4">
+      <button class="btn btn-success btn-sm" (click)="search()">   Search   </button>
+    </div>
+  </div>
+</form>
 
 
  <!-- Anzeigen breits vorhandener Bilder-->
-<div class="card mt-3">
-  <div class="card-header">List of images</div>
-  <div class="card-body">
-    <div class="row">
-      <div class="col-3" *ngFor="let image of images_all">
-        <div class="card">
-          <img class="card-img-top" src="data:image/png;base64,{{ image.img.data.data }}" alt="Card image cap">
-          <div class="card-body">
-            <h5 class="card-title">{{ image.name }}</h5>
-            <p class="card-text">{{ image.desc }}</p>
+  <div class="card mt-3">
+    <div class="card-header">List of images</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-3" *ngFor="let image of images_all">
+          <div class="card">
+            <img class="card-img-top" src="data:image/png;base64,{{ image.img.data.data }}" alt="Card image cap">
+            <div class="card-body">
+              <h5 class="card-title">{{ image.name }}</h5>
+              <p class="card-text">{{ image.desc }}</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
