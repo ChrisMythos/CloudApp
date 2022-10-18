@@ -1,9 +1,9 @@
-FROM node:bullseye-slim as build-step
-WORKDIR /usr/src/app
-COPY ["package.json", "package-lock.json*", "./"]
-#install angular global
-RUN npm install -g @angular/cli
-RUN npm install 
-COPY . .
-RUN npm run build -noWatch
-CMD ng serve --host 0.0.0.0
+FROM node:latest as build
+WORKDIR /usr/local/app
+COPY ./ /usr/local/app/
+RUN npm install
+RUN npm run build
+
+FROM nginx:latest
+COPY --from=build /usr/local/app/dist/angular-14-file-upload /usr/share/nginx/html
+EXPOSE 80
