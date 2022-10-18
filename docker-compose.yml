@@ -9,7 +9,7 @@ services:
     image: mongo
     restart: always
     volumes:
-      - mongoData:/data/db
+      - /mnt/data:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
@@ -19,5 +19,3 @@ services:
       - "3000:3000"
     depends_on:
       - mongo
-volumes:
-  mongoData: 
