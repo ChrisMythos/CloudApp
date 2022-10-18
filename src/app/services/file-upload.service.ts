@@ -7,7 +7,7 @@ import { Image } from '../models/getImagesModel';
 })
 export class FileUploadService {
   
-  private baseUrl = window.location.host+":3000";
+  private baseUrl: string = "http://"+window.location.host+":3000";
 
   constructor(private http: HttpClient) {}
 
