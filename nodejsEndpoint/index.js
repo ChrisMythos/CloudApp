@@ -5,6 +5,7 @@ var fs = require('fs');
 var multer = require('multer');
 var path = require('path');
 var mongodb = require("./mongodb");
+var cors = require('cors')
 
 
 const app = express();
@@ -23,6 +24,7 @@ var storage = multer.diskStorage({
 var upload = multer({ storage: storage });
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(cors())
 
 // connect to mongodb
 console.log("connecting to db: ");
