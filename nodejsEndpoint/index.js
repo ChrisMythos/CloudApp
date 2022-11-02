@@ -5,7 +5,7 @@ var cors = require('cors')
 var multer = require('multer');
 const app = express();
 const port = process.env.PORT;
-
+const { Storage } = require('@google-cloud/storage');
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cors())
 const storage = multer.memoryStorage()
@@ -16,31 +16,15 @@ app.get('/test', (req, res) => {
     res.sendStatus(200).send("yess");
 });
 // get endpoint. all iamges are received from db and returned in response
-app.get('/getImages', (req, res) => {
-    imgModel.find({}, (err, items) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send('An error occurred', err);
-        }
-        else {
-            res.json(items);
-            console.log("items send to requester");
-        }
-    });
+app.get('/getImages', async(req, res) => {
+    const contents = await downloadAllImages("databuckets1");
+    res.send(contents);
 });
 
-app.get('/queryImage', (req, res) => {
+app.get('/queryImage', async (req, res) => {
     queryString = req.query.queryString;
-    imgModel.find({ $or: [{ name: { $regex: queryString } }, { desc: { $regex: queryString } }] }, (err, items) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send('An error occurred', err);
-        }
-        else {
-            res.json(items);
-            console.log("items send to requester");
-        }
-    });
+    const contents = await downloadIntoMemory("databuckets1",queryString).catch(console.error);
+    res.send(contents);
 });
 
 
@@ -57,7 +41,6 @@ app.listen(port, () => console.log(`Nodejs endpoint is online and listen to port
 
 async function uploadFromMemory(bucketName, destFileName, contents) {
     console.log("bin in der upload TO gcloud function");
-    const { Storage } = require('@google-cloud/storage');
     // Creates a client
     const storage = new Storage();
     console.log(bucketName);
@@ -69,4 +52,26 @@ async function uploadFromMemory(bucketName, destFileName, contents) {
     console.log(
         `${destFileName} with contents ${contents} uploaded to ${bucketName}.`
     );
+}
+async function downloadIntoMemory(bucketName,fileName) {
+
+    // Creates a client
+    const storage = new Storage();
+    // Downloads the file into a buffer in memory.
+    const contents = await storage.bucket(bucketName).file(fileName).download();
+    console.log(
+        `Contents of gs://${bucketName}/${fileName} are ${contents.toString()}.`
+    );
+    return contents;
+}
+async function downloadAllImages(bucketName) {
+
+    // Creates a client
+    const storage = new Storage();
+    // Downloads the file into a buffer in memory.
+    const contents = await storage.bucket(bucketName).getFiles();
+    console.log(
+        `Contents of gs://${bucketName} are ${contents.toString()}.`
+    );
+    return contents;
 }
