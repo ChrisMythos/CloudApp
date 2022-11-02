@@ -1,35 +1,22 @@
 const express = require('express');
 var imgModel = require('./model');
 var bodyParser = require('body-parser');
-var fs = require('fs');
-var multer = require('multer');
-var path = require('path');
-var mongodb = require("./mongodb");
 var cors = require('cors')
-
-
+var multer = require('multer');
+var multerGoogleStorage = require("multer-cloud-storage");
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 
-// save received files in upload folder
-var storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads')
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + '-' + Date.now())
-    }
-});
-
-var upload = multer({ storage: storage });
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser)
 app.use(cors())
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
 
-// connect to mongodb
-console.log("connecting to db: ");
-mongodb.connect();
 
+app.get('/test', (req, res) => {
+    res.sendStatus(200).send("yess");
+});
 // get endpoint. all iamges are received from db and returned in response
 app.get('/getImages', (req, res) => {
     imgModel.find({}, (err, items) => {
@@ -46,7 +33,7 @@ app.get('/getImages', (req, res) => {
 
 app.get('/queryImage', (req, res) => {
     queryString = req.query.queryString;
-    imgModel.find({ $or: [ { name: {$regex : queryString} }, { desc: {$regex : queryString} } ] }, (err, items) => {
+    imgModel.find({ $or: [{ name: { $regex: queryString } }, { desc: { $regex: queryString } }] }, (err, items) => {
         if (err) {
             console.log(err);
             res.status(500).send('An error occurred', err);
@@ -62,26 +49,26 @@ app.get('/queryImage', (req, res) => {
 // Post endpoint. Images is received here and saved into database
 app.post('/uploadImage', upload.single('img'), (req, res, next) => {
     console.log("bin in der upload");
+    console.log("try to save in gcloud data bucket");
+    console.log(req.body);
+    uploadFromMemory("databuckets1", req.body.name, req.body.img).catch(console.error);
+    res.send("okay");
 
-    var obj = {
-        name: req.body.name,
-        desc: req.body.desc,
-        img: {
-            data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
-            contentType: 'image/png'
-        }
-    }
-    console.log("object received:");
-    console.log(obj);
-    imgModel.create(obj, (err, item) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send('An error occurred', err);
-        }
-        else {
-            // item.save();
-            res.status(200).send("object was saved to database sucessfully");
-        }
-    });
 });
 app.listen(port, () => console.log(`Nodejs endpoint is online and listen to port ${port}!`))
+
+async function uploadFromMemory(bucketName, destFileName, contents) {
+    console.log("bin in der upload TO gcloud function");
+    const { Storage } = require('@google-cloud/storage');
+    // Creates a client
+    const storage = new Storage();
+    console.log(bucketName);
+    console.log(destFileName);
+    console.log(contents);
+    await storage.bucket(bucketName).file(destFileName).save(contents);
+
+
+    console.log(
+        `${destFileName} with contents ${contents} uploaded to ${bucketName}.`
+    );
+}
