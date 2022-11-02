@@ -1,87 +1,64 @@
 const express = require('express');
-var imgModel = require('./model');
-var bodyParser = require('body-parser');
-var fs = require('fs');
-var multer = require('multer');
-var path = require('path');
-var mongodb = require("./mongodb");
-var cors = require('cors')
+const cors = require('cors');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const { Storage } = require('@google-cloud/storage');
+const { Firestore } = require('@google-cloud/firestore');
 
+const uploadHandler = multer({ storage: multer.memoryStorage() });
+const bucket = new Storage().bucket('databuckets2');
+const fileCollection = new Firestore().collection('files');
 
 const app = express();
-const port = 3000;
+app.use(cors());
 
-// save received files in upload folder
-var storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads')
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + '-' + Date.now())
+async function getFiles() {
+    const files = [];
+    const fileRefs = await fileCollection.listDocuments();
+    for (const fileRef of fileRefs) {
+        const file = await fileRef.get();
+        if (!file.exists) {
+            continue;
+        }
+        const bucketKey = file.get('bucketKey');
+        const contents = await bucket.file(bucketKey).download();
+        files.push({
+            name: file.get('name'),
+            desc: file.get('desc'),
+            img: {
+                data: contents[0].toString('base64'),
+                contentType: 'img/png',
+            },
+        });
     }
-});
-
-var upload = multer({ storage: storage });
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
-app.use(cors())
-
-// connect to mongodb
-console.log("connecting to db: ");
-mongodb.connect();
+    return files;
+}
 
 // get endpoint. all iamges are received from db and returned in response
-app.get('/getImages', (req, res) => {
-    imgModel.find({}, (err, items) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send('An error occurred', err);
-        }
-        else {
-            res.json(items);
-            console.log("items send to requester");
-        }
-    });
+app.get('/getImages', async (req, res) => {
+    res.json(await getFiles());
 });
 
-app.get('/queryImage', (req, res) => {
-    queryString = req.query.queryString;
-    imgModel.find({ $or: [ { name: {$regex : queryString} }, { desc: {$regex : queryString} } ] }, (err, items) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send('An error occurred', err);
-        }
-        else {
-            res.json(items);
-            console.log("items send to requester");
-        }
-    });
+app.get('/queryImage', async (req, res) => {
+    const query = req.query.queryString;
+    const files = await getFiles();
+    const filteredFiles = files.filter(file => file.name.toLowerCase().includes(query));
+    res.json(filteredFiles);
 });
-
 
 // Post endpoint. Images is received here and saved into database
-app.post('/uploadImage', upload.single('img'), (req, res, next) => {
-    console.log("bin in der upload");
-
-    var obj = {
-        name: req.body.name,
-        desc: req.body.desc,
-        img: {
-            data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
-            contentType: 'image/png'
-        }
-    }
-    console.log("object received:");
-    console.log(obj);
-    imgModel.create(obj, (err, item) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send('An error occurred', err);
-        }
-        else {
-            // item.save();
-            res.status(200).send("object was saved to database sucessfully");
-        }
-    });
+app.post('/uploadImage', uploadHandler.single('img'), async (req, res, next) => {
+    const bucketKey = uuidv4();
+    await Promise.all([
+        bucket.file(bucketKey).save(req.file.buffer),
+        fileCollection.add({
+            name: req.body.name,
+            desc: req.body.desc,
+            bucketKey,
+        }),
+    ]);
+    res.send('okay');
 });
-app.listen(port, () => console.log(`Nodejs endpoint is online and listen to port ${port}!`))
+
+const port = process.env.PORT ?? 3000;
+app.listen(port, () => console.log(`Nodejs endpoint is online and listen to port ${port}!`));
