@@ -27,23 +27,10 @@ export class FileSearchComponent implements OnInit {
       this.fileInfos.subscribe((data: any) => {
         //convert image to base64
         data.forEach((image: any) => {
-          // convert _arrayBufferToBase64
-          const imageBase64 = _arrayBufferToBase64(image.img.data.data);
-          console.log(imageBase64);
-          image.img.data.data = imageBase64;
           // copy image to images array
           this.images_all.push(image as Image);
         });
       });
     }
   }
-}
-function _arrayBufferToBase64(buffer: any) {
-  var binary = '';
-  var bytes = new Uint8Array(buffer);
-  var len = bytes.byteLength;
-  for (var i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
 }

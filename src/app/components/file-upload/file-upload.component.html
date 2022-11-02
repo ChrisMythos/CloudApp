@@ -43,7 +43,7 @@
       <div class="row">
         <div class="col-3" *ngFor="let image of images_all">
           <div class="card">
-            <img class="card-img-top" src="data:image/png;base64,{{ image.img.data.data }}" alt="Card image cap">
+            <img class="card-img-top" src="data:image/png;base64,{{ image.img.data }}" alt="Card image cap">
             <div class="card-body">
               <h5 class="card-title">{{ image.name }}</h5>
               <p class="card-text">{{ image.desc }}</p>

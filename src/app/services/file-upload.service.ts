@@ -6,8 +6,8 @@ import { Image } from '../models/getImagesModel';
   providedIn: 'root',
 })
 export class FileUploadService {
-  
-  private baseUrl: string = "http://"+window.location.host+":3000";
+
+  private baseUrl: string = "https://cloud-app-htwg.ey.r.appspot.com";
 
   constructor(private http: HttpClient) {}
 

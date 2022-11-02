@@ -1,4 +1,4 @@
 export class Imagedata {
-    data: { type: string; data: number[] };
+    data: string;
     contentType: string;
 }
