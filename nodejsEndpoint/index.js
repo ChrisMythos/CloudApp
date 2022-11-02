@@ -3,12 +3,10 @@ var imgModel = require('./model');
 var bodyParser = require('body-parser');
 var cors = require('cors')
 var multer = require('multer');
-var multerGoogleStorage = require("multer-cloud-storage");
 const app = express();
 const port = process.env.PORT;
 
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser)
 app.use(cors())
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
