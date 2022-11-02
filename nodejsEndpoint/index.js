@@ -1,74 +1,68 @@
 const express = require('express');
-var imgModel = require('./model');
-var bodyParser = require('body-parser');
-var cors = require('cors')
-var multer = require('multer');
-var multerGoogleStorage = require("multer-cloud-storage");
+const cors = require('cors');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const { Storage } = require('@google-cloud/storage');
+const { Firestore } = require('@google-cloud/firestore');
+
+const uploadHandler = multer({ storage: multer.memoryStorage() });
+const bucket = new Storage().bucket('databuckets2');
+const fileCollection = new Firestore().collection('files');
+
 const app = express();
-const port = process.env.PORT;
+app.use(cors());
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser)
-app.use(cors())
-const storage = multer.memoryStorage()
-const upload = multer({ storage: storage })
+async function getFiles(fileRefs) {
+    const files = [];
+    for (const fileRef of fileRefs) {
+        const file = await fileRef.get();
+        if (!file.exists) {
+            continue;
+        }
+        const bucketKey = file.get('bucketKey');
+        const contents = await bucket.file(bucketKey).download();
+        files.push({
+            name: file.get('name'),
+            desc: file.get('desc'),
+            img: {
+                data: contents[0].toString('base64'),
+                contentType: 'img/png',
+            },
+        });
+    }
+    return files;
+}
 
-
-app.get('/test', (req, res) => {
-    res.sendStatus(200).send("yess");
-});
 // get endpoint. all iamges are received from db and returned in response
-app.get('/getImages', (req, res) => {
-    imgModel.find({}, (err, items) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send('An error occurred', err);
-        }
-        else {
-            res.json(items);
-            console.log("items send to requester");
-        }
-    });
+app.get('/getImages', async (req, res) => {
+    const fileRefs = await fileCollection.listDocuments();
+    const files = await getFiles(fileRefs);
+    res.json(files);
 });
 
-app.get('/queryImage', (req, res) => {
-    queryString = req.query.queryString;
-    imgModel.find({ $or: [{ name: { $regex: queryString } }, { desc: { $regex: queryString } }] }, (err, items) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send('An error occurred', err);
-        }
-        else {
-            res.json(items);
-            console.log("items send to requester");
-        }
-    });
+app.get('/queryImage', async (req, res) => {
+    const startcode = req.query.queryString;
+    const endcode = startcode.replace(/.$/, c => String.fromCharCode(c.charCodeAt(0) + 1));
+    const fileRefs = await fileCollection
+        .where('name', '>=', startcode)
+        .where('name', '<', endcode);
+    const files = await getFiles(fileRefs);
+    res.json(files);
 });
-
 
 // Post endpoint. Images is received here and saved into database
-app.post('/uploadImage', upload.single('img'), (req, res, next) => {
-    console.log("bin in der upload");
-    console.log("try to save in gcloud data bucket");
-    console.log(req.body);
-    uploadFromMemory("databuckets1", req.body.name, req.body.img).catch(console.error);
-    res.send("okay");
-
+app.post('/uploadImage', uploadHandler.single('img'), async (req, res, next) => {
+    const bucketKey = uuidv4();
+    await Promise.all([
+        bucket.file(bucketKey).save(req.file.buffer),
+        fileCollection.add({
+            name: req.body.name,
+            desc: req.body.desc,
+            bucketKey,
+        }),
+    ]);
+    res.send('okay');
 });
-app.listen(port, () => console.log(`Nodejs endpoint is online and listen to port ${port}!`))
 
-async function uploadFromMemory(bucketName, destFileName, contents) {
-    console.log("bin in der upload TO gcloud function");
-    const { Storage } = require('@google-cloud/storage');
-    // Creates a client
-    const storage = new Storage();
-    console.log(bucketName);
-    console.log(destFileName);
-    console.log(contents);
-    await storage.bucket(bucketName).file(destFileName).save(contents);
-
-
-    console.log(
-        `${destFileName} with contents ${contents} uploaded to ${bucketName}.`
-    );
-}
+const port = process.env.PORT ?? 3000;
+app.listen(port, () => console.log(`Nodejs endpoint is online and listen to port ${port}!`));

@@ -1,6 +1,7 @@
 runtime: nodejs16
 
-instance_class: F4
+instance_class: F1
+# service:
 
 handlers:
   - url: /.*
