@@ -12,8 +12,9 @@ const fileCollection = new Firestore().collection('files');
 const app = express();
 app.use(cors());
 
-async function getFiles(fileRefs) {
+async function getFiles() {
     const files = [];
+    const fileRefs = await fileCollection.listDocuments();
     for (const fileRef of fileRefs) {
         const file = await fileRef.get();
         if (!file.exists) {
@@ -35,19 +36,14 @@ async function getFiles(fileRefs) {
 
 // get endpoint. all iamges are received from db and returned in response
 app.get('/getImages', async (req, res) => {
-    const fileRefs = await fileCollection.listDocuments();
-    const files = await getFiles(fileRefs);
-    res.json(files);
+    res.json(await getFiles());
 });
 
 app.get('/queryImage', async (req, res) => {
-    const startcode = req.query.queryString;
-    const endcode = startcode.replace(/.$/, c => String.fromCharCode(c.charCodeAt(0) + 1));
-    const fileRefs = await fileCollection
-        .where('name', '>=', startcode)
-        .where('name', '<', endcode);
-    const files = await getFiles(fileRefs);
-    res.json(files);
+    const query = req.query.queryString;
+    const files = await getFiles();
+    const filteredFiles = files.filter(file => file.name.toLowerCase().includes(query));
+    res.json(filteredFiles);
 });
 
 // Post endpoint. Images is received here and saved into database
