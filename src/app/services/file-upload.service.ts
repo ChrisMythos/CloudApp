@@ -7,7 +7,7 @@ import { Image } from '../models/getImagesModel';
 })
 export class FileUploadService {
 
-  private baseUrl: string = "https://cloud-app-htwg.ey.r.appspot.com";
+  private baseUrl: string = "https://oval-turbine-366312.oa.r.appspot.com";
 
   constructor(private http: HttpClient) {}
 

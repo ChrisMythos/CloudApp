@@ -6,7 +6,7 @@ const { Storage } = require('@google-cloud/storage');
 const { Firestore } = require('@google-cloud/firestore');
 
 const uploadHandler = multer({ storage: multer.memoryStorage() });
-const bucket = new Storage().bucket('databuckets2');
+const bucket = new Storage().bucket('databuckets1');
 const fileCollection = new Firestore().collection('files');
 
 const app = express();
@@ -41,8 +41,14 @@ app.get('/getImages', async (req, res) => {
 
 app.get('/queryImage', async (req, res) => {
     const query = req.query.queryString;
+    console.log("queryString: ");
+    console.log(query);
     const files = await getFiles();
-    const filteredFiles = files.filter(file => file.name.toLowerCase().includes(query));
+    console.log("files:");
+    console.log(files);
+    const filteredFiles = files.filter(file => file.name.toLowerCase().includes(query.toLowerCase()));
+    console.log("filteredFiles: ");
+    console.log(filteredFiles);
     res.json(filteredFiles);
 });
 
