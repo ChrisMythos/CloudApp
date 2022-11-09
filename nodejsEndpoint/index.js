@@ -6,7 +6,7 @@ const { Storage } = require('@google-cloud/storage');
 const { Firestore } = require('@google-cloud/firestore');
 
 const uploadHandler = multer({ storage: multer.memoryStorage() });
-const bucket = new Storage().bucket('databuckets1');
+const bucket = new Storage().bucket(process.env.projectId+'-databuckets1');
 const fileCollection = new Firestore().collection('files');
 
 const app = express();
@@ -68,3 +68,4 @@ app.post('/uploadImage', uploadHandler.single('img'), async (req, res, next) => 
 
 const port = process.env.PORT ?? 3000;
 app.listen(port, () => console.log(`Nodejs endpoint is online and listen to port ${port}!`));
+console.log("bucket>"+process.env.projectId);
